@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'com.LiqueStore.' is invalid and this project uses 'com.LiqueStore' instead.
+* The original package name 'com.liquestore.' is invalid and this project uses 'com.liquestore' instead.
 
 # Getting Started
 
