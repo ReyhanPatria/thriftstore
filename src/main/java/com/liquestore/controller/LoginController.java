@@ -1,7 +1,7 @@
 package com.liquestore.controller;
 
 import com.liquestore.dto.Response;
-import com.liquestore.model.AccessRightModel;
+import com.liquestore.model.AccessRight;
 import com.liquestore.model.CustomerModel;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.model.TemporaryOrderModel;
@@ -114,8 +114,10 @@ public class LoginController {
         addCustomer.setUsernameig(usernameIG);
         addCustomer.setPhonenumber(phonenumber);
         addCustomer.setBirthdate(birthdate);
-        AccessRightModel accessRightModel = new AccessRightModel(4);
-        addCustomer.setAccessRight(accessRightModel);
+        AccessRight accessRight = AccessRight.builder()
+                .id(4)
+                .build();
+        addCustomer.setAccessRight(accessRight);
         addCustomer.setStatus("active");
         customerRepository.save(addCustomer);
         logger.info(String.valueOf(addCustomer));

@@ -33,7 +33,7 @@ public class EmployeeModel {
 
     @ManyToOne
     @JoinColumn(name = "accessrightid", referencedColumnName = "id")
-    private AccessRightModel accessRight;
+    private AccessRight accessRight;
 
     public EmployeeModel() {
     }
@@ -98,11 +98,11 @@ public class EmployeeModel {
         this.password = password;
     }
 
-    public AccessRightModel getAccessRight() {
+    public AccessRight getAccessRight() {
         return accessRight;
     }
 
-    public void setAccessRight(AccessRightModel accessRight) {
+    public void setAccessRight(AccessRight accessRight) {
         this.accessRight = accessRight;
     }
 

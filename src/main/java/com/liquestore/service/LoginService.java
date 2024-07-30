@@ -1,6 +1,6 @@
 package com.liquestore.service;
 
-import com.liquestore.model.AccessRightModel;
+import com.liquestore.model.AccessRight;
 import com.liquestore.model.CustomerModel;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.repository.AccessRightRepository;
@@ -41,7 +41,7 @@ public class LoginService {
     }
 
     public List<EmployeeModel> getEmployeesByAccessRightId(int accessrightid) {
-        AccessRightModel accessRight = accessRightRepository.findById(accessrightid)
+        AccessRight accessRight = accessRightRepository.findById(accessrightid)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid access right ID: " + accessrightid));
         return employeeRepository.findByAccessRight(accessRight);
     }

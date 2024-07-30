@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liquestore.dto.Response;
 import com.liquestore.model.Attendance;
-import com.liquestore.model.AccessRightModel;
+import com.liquestore.model.AccessRight;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.model.ItemModel;
 import com.liquestore.model.OrdersModel;
@@ -308,10 +308,12 @@ public class ManagerController {
                             .message("Email sudah digunakan")
                             .build());
         }
-        AccessRightModel accessRightModel = new AccessRightModel(employeeModel.getAccessRight().getId());
+        AccessRight accessRight = AccessRight.builder()
+                .id(employeeModel.getAccessRight().getId())
+                .build();
         EmployeeModel addEmployee = new EmployeeModel();
         addEmployee.setFullname(employeeModel.getFullname());
-        addEmployee.setAccessRight(accessRightModel);
+        addEmployee.setAccessRight(accessRight);
         addEmployee.setBirthdate(employeeModel.getBirthdate());
         addEmployee.setPhonenumber(employeeModel.getPhonenumber());
         addEmployee.setEmail(employeeModel.getEmail());
@@ -329,7 +331,7 @@ public class ManagerController {
 
     @GetMapping("/getRolesKaryawan")
     public ResponseEntity<?> getRolesKaryawan() {
-        List<AccessRightModel> getAllRoles = accessRightRepository.findAll();
+        List<AccessRight> getAllRoles = accessRightRepository.findAll();
         logger.info(String.valueOf(getAllRoles));
         return ResponseEntity.ok(getAllRoles);
     }
@@ -348,7 +350,9 @@ public class ManagerController {
     @PostMapping("/editKaryawan")
     public ResponseEntity<?> editKaryawan(@RequestBody EmployeeModel employeeModel) {
         //        String hashedPassword = passwordEncoder.encode(employeeModel.getPassword());
-        AccessRightModel accessRightModel = new AccessRightModel(employeeModel.getAccessRight().getId());
+        AccessRight accessRight = AccessRight.builder()
+                .id(employeeModel.getAccessRight().getId())
+                .build();
         Optional<EmployeeModel> optionalEmployee = employeeRepository.findById(employeeModel.getId());
         logger.info(String.valueOf(employeeModel.getId()));
         logger.info(String.valueOf(optionalEmployee));
@@ -358,7 +362,7 @@ public class ManagerController {
             employee.setFullname(employeeModel.getFullname());
             employee.setBirthdate(employeeModel.getBirthdate());
             employee.setPhonenumber(employeeModel.getPhonenumber());
-            employee.setAccessRight(accessRightModel);
+            employee.setAccessRight(accessRight);
             employee.setEmail(employeeModel.getEmail());
             employee.setFirstjoindate(employeeModel.getFirstjoindate());
             employee.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));

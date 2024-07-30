@@ -26,7 +26,7 @@ public class CustomerModel {
     private String status;
     @ManyToOne
     @JoinColumn(name = "accessrightid", referencedColumnName = "id")
-    private AccessRightModel accessRight;
+    private AccessRight accessRight;
 
     public CustomerModel() {
     }
@@ -108,11 +108,11 @@ public class CustomerModel {
         this.status = status;
     }
 
-    public AccessRightModel getAccessRight() {
+    public AccessRight getAccessRight() {
         return accessRight;
     }
 
-    public void setAccessRight(AccessRightModel accessRight) {
+    public void setAccessRight(AccessRight accessRight) {
         this.accessRight = accessRight;
     }
 }

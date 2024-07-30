@@ -1,8 +1,8 @@
 package com.liquestore.repository;
 
-import com.liquestore.model.AccessRightModel;
+import com.liquestore.model.AccessRight;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AccessRightRepository extends JpaRepository<AccessRightModel, Integer> {
+public interface AccessRightRepository extends JpaRepository<AccessRight, Integer> {
 
 }
