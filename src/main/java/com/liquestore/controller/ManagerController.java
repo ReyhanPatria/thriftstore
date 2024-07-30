@@ -1,7 +1,10 @@
 package com.liquestore.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liquestore.dto.Response;
-import com.liquestore.model.AbsensiModel;
+import com.liquestore.model.Attendance;
 import com.liquestore.model.AccessRightModel;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.model.ItemModel;
@@ -15,9 +18,6 @@ import com.liquestore.repository.OrdersRepository;
 import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.LoginService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -100,44 +100,50 @@ public class ManagerController {
         }
         if (cekPasscode) {
             List<EmployeeModel> getEmployee = loginService.getUsersByUsername(tempUsername);
-            List<AbsensiModel> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
+            List<Attendance> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
             if (!getAbsensi.isEmpty()) {
                 for (int i = 0; i < getAbsensi.size(); i++) {
-                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))) {
+                    if (getAbsensi.get(i).getDate().equals(Date.valueOf(LocalDate.now()))) {
                         cekTanggal = true;
                         idxAbsensi = i;
                     }
                 }
                 if (cekTanggal) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new Response(tempUsername + " Sudah Melakukan ClockIn"));
+                            .body(Response.builder()
+                                    .message(tempUsername + " Sudah Melakukan ClockIn")
+                                    .build());
                 }
                 else {
-                    AbsensiModel absensi = new AbsensiModel();
-                    absensi.setEmployeeid(getEmployee.get(0).getId());
+                    Attendance absensi = new Attendance();
+                    absensi.setEmployeeId(getEmployee.get(0).getId());
                     absensi.setUsername(getEmployee.get(0).getUsername());
                     absensi.setPassword(getEmployee.get(0).getPassword());
-                    absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                    absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                    absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                    absensi.setDate(Date.valueOf(LocalDate.now()));
                     absensiRepository.save(absensi);
                 }
             }
             else {
                 logger.info("bikin baru");
-                AbsensiModel absensi = new AbsensiModel();
-                absensi.setEmployeeid(getEmployee.get(0).getId());
+                Attendance absensi = new Attendance();
+                absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
                 absensi.setPassword(getEmployee.get(0).getPassword());
-                absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                absensi.setDate(Date.valueOf(LocalDate.now()));
                 absensiRepository.save(absensi);
             }
-            return ResponseEntity.ok(new Response("Berhasil Clock In, " + tempUsername));
+            return ResponseEntity.ok(Response.builder()
+                    .message("Berhasil Clock In, " + tempUsername)
+                    .build());
         }
         else {
             logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
             logger.info("admin tidak ditermukan");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Response.builder()
+                    .message("Passcode Salah")
+                    .build());
         }
     }
 
@@ -161,48 +167,56 @@ public class ManagerController {
         }
         if (cekPasscode) {
             List<EmployeeModel> getEmployee = loginService.getUsersByUsername(tempUsername);
-            List<AbsensiModel> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
+            List<Attendance> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
             if (!getAbsensi.isEmpty()) {
                 for (int i = 0; i < getAbsensi.size(); i++) {
-                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))) {
+                    if (getAbsensi.get(i).getDate().equals(Date.valueOf(LocalDate.now()))) {
                         cekTanggal = true;
                         idxAbsensi = i;
                     }
                 }
                 if (cekTanggal) {
-                    getAbsensi.get(idxAbsensi).setClockout(Timestamp.valueOf(LocalDateTime.now()));
-                    Timestamp temp = getAbsensi.get(idxAbsensi).getClockout();
+                    getAbsensi.get(idxAbsensi).setClockOut(Timestamp.valueOf(LocalDateTime.now()));
+                    Timestamp temp = getAbsensi.get(idxAbsensi).getClockOut();
                     logger.info(String.valueOf(temp));
                     absensiRepository.save(getAbsensi.get(idxAbsensi));
 
-                    return ResponseEntity.ok(new Response("Berhasil Clock Out, " + tempUsername));
+                    return ResponseEntity.ok(Response.builder()
+                            .message("Berhasil Clock Out, " + tempUsername)
+                            .build());
                 }
                 else {
-                    AbsensiModel absensi = new AbsensiModel();
-                    absensi.setEmployeeid(getEmployee.get(0).getId());
+                    Attendance absensi = new Attendance();
+                    absensi.setEmployeeId(getEmployee.get(0).getId());
                     absensi.setUsername(getEmployee.get(0).getUsername());
                     absensi.setPassword(getEmployee.get(0).getPassword());
-                    absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                    absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                    absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                    absensi.setDate(Date.valueOf(LocalDate.now()));
                     absensiRepository.save(absensi);
                 }
             }
             else {
                 logger.info("bikin baru");
-                AbsensiModel absensi = new AbsensiModel();
-                absensi.setEmployeeid(getEmployee.get(0).getId());
+                Attendance absensi = new Attendance();
+                absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
                 absensi.setPassword(getEmployee.get(0).getPassword());
-                absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                absensi.setDate(Date.valueOf(LocalDate.now()));
                 absensiRepository.save(absensi);
             }
-            return ResponseEntity.ok(new Response("Berhasil Clock In, " + tempUsername));
+            return ResponseEntity.ok(Response.builder()
+                    .message("Berhasil Clock In, " + tempUsername)
+                    .build());
         }
         else {
             logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
             logger.info("admin tidak ditermukan");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Response.builder()
+                            .message("Passcode Salah")
+                            .build());
         }
     }
 
@@ -282,11 +296,17 @@ public class ManagerController {
     public ResponseEntity<?> tambahKaryawan(@RequestBody EmployeeModel employeeModel) {
         EmployeeModel existingUsername = employeeRepository.findByUsername(employeeModel.getUsername());
         if (existingUsername != null) {
-            return ResponseEntity.badRequest().body(new Response("Username sudah digunakan"));
+            return ResponseEntity.badRequest()
+                    .body(Response.builder()
+                            .message("Username sudah digunakan")
+                            .build());
         }
         EmployeeModel existingEmail = employeeRepository.findByEmail(employeeModel.getEmail());
         if (existingEmail != null) {
-            return ResponseEntity.badRequest().body(new Response("Email sudah digunakan"));
+            return ResponseEntity.badRequest()
+                    .body(Response.builder()
+                            .message("Email sudah digunakan")
+                            .build());
         }
         AccessRightModel accessRightModel = new AccessRightModel(employeeModel.getAccessRight().getId());
         EmployeeModel addEmployee = new EmployeeModel();
@@ -380,9 +400,11 @@ public class ManagerController {
         logger.info(idAbsensi);
         SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm");
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        List<AbsensiModel> pilihKaryawan = absensiRepository.getAbsensiByEmployeeid(Integer.parseInt(idAbsensi));
+        List<Attendance> pilihKaryawan = absensiRepository.getAbsensiByEmployeeid(Integer.parseInt(idAbsensi));
         if (pilihKaryawan == null) {
-            return ResponseEntity.ok(new Response("Data Karyawan null"));
+            return ResponseEntity.ok(Response.builder()
+                    .message("Data Karyawan null")
+                    .build());
         }
         else {
             logger.info(String.valueOf(pilihKaryawan));
@@ -390,15 +412,15 @@ public class ManagerController {
                 Map<String, Object> empData = new HashMap<>();
                 empData.put("id", absensi.getId());
                 empData.put("username", absensi.getUsername());
-                empData.put("tanggal", dateFormat.format(absensi.getTodaydate()));
-                if (absensi.getClockin() != null) {
-                    empData.put("clockIn", clockFormat.format(absensi.getClockin()));
+                empData.put("tanggal", dateFormat.format(absensi.getDate()));
+                if (absensi.getClockIn() != null) {
+                    empData.put("clockIn", clockFormat.format(absensi.getClockIn()));
                 }
                 else {
                     empData.put("clockIn", "");
                 }
-                if (absensi.getClockout() != null) {
-                    empData.put("clockOut", clockFormat.format(absensi.getClockout()));
+                if (absensi.getClockOut() != null) {
+                    empData.put("clockOut", clockFormat.format(absensi.getClockOut()));
                 }
                 else {
                     empData.put("clockOut", "");

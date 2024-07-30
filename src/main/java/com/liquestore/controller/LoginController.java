@@ -94,11 +94,17 @@ public class LoginController {
             @RequestParam("birthdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthdate) {
         CustomerModel existingUsername = customerRepository.findByUsername(username);
         if (existingUsername != null) {
-            return ResponseEntity.badRequest().body(new Response("Username sudah digunakan"));
+            return ResponseEntity.badRequest()
+                    .body(Response.builder()
+                            .message("Username sudah digunakan")
+                            .build());
         }
         CustomerModel existingPhoneNumber = customerRepository.findByPhonenumber(phonenumber);
         if (existingPhoneNumber != null) {
-            return ResponseEntity.badRequest().body(new Response("Phone Number sudah digunakan"));
+            return ResponseEntity.badRequest()
+                    .body(Response.builder()
+                            .message("Phone Number sudah digunakan")
+                            .build());
         }
         CustomerModel addCustomer = new CustomerModel();
         addCustomer.setUsername(username);
@@ -113,7 +119,9 @@ public class LoginController {
         addCustomer.setStatus("active");
         customerRepository.save(addCustomer);
         logger.info(String.valueOf(addCustomer));
-        return ResponseEntity.ok(new Response("berhasil register"));
+        return ResponseEntity.ok(Response.builder()
+                .message("berhasil register")
+                .build());
     }
 
     @GetMapping("/getNomorWa")

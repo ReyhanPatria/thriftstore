@@ -1,7 +1,10 @@
 package com.liquestore.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liquestore.dto.Response;
-import com.liquestore.model.AbsensiModel;
+import com.liquestore.model.Attendance;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.model.ItemModel;
 import com.liquestore.model.OrdersModel;
@@ -12,9 +15,6 @@ import com.liquestore.repository.OrdersRepository;
 import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.LoginService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -87,44 +87,53 @@ public class SupervisorController {
         }
         if (cekPasscode) {
             List<EmployeeModel> getEmployee = loginService.getUsersByUsername(tempUsername);
-            List<AbsensiModel> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
+            List<Attendance> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
             if (!getAbsensi.isEmpty()) {
                 for (int i = 0; i < getAbsensi.size(); i++) {
-                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))) {
+                    if (getAbsensi.get(i).getDate().equals(Date.valueOf(LocalDate.now()))) {
                         cekTanggal = true;
                         idxAbsensi = i;
                     }
                 }
                 if (cekTanggal) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new Response(tempUsername + " Sudah Melakukan ClockIn"));
+                    return ResponseEntity
+                            .status(HttpStatus.BAD_REQUEST)
+                            .body(Response.builder()
+                                    .message(tempUsername + " Sudah Melakukan ClockIn")
+                                    .build());
                 }
                 else {
-                    AbsensiModel absensi = new AbsensiModel();
-                    absensi.setEmployeeid(getEmployee.get(0).getId());
+                    Attendance absensi = new Attendance();
+                    absensi.setEmployeeId(getEmployee.get(0).getId());
                     absensi.setUsername(getEmployee.get(0).getUsername());
                     absensi.setPassword(getEmployee.get(0).getPassword());
-                    absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                    absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                    absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                    absensi.setDate(Date.valueOf(LocalDate.now()));
                     absensiRepository.save(absensi);
                 }
             }
             else {
                 logger.info("bikin baru");
-                AbsensiModel absensi = new AbsensiModel();
-                absensi.setEmployeeid(getEmployee.get(0).getId());
+                Attendance absensi = new Attendance();
+                absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
                 absensi.setPassword(getEmployee.get(0).getPassword());
-                absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                absensi.setDate(Date.valueOf(LocalDate.now()));
                 absensiRepository.save(absensi);
             }
-            return ResponseEntity.ok(new Response("Berhasil Clock In, " + tempUsername));
+            return ResponseEntity.ok(Response.builder()
+                    .message("Berhasil Clock In, " + tempUsername)
+                    .build());
         }
         else {
             logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
             logger.info("admin tidak ditermukan");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Response.builder()
+                            .message("Passcode Salah")
+                            .build());
         }
     }
 
@@ -148,48 +157,56 @@ public class SupervisorController {
         }
         if (cekPasscode) {
             List<EmployeeModel> getEmployee = loginService.getUsersByUsername(tempUsername);
-            List<AbsensiModel> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
+            List<Attendance> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
             if (!getAbsensi.isEmpty()) {
                 for (int i = 0; i < getAbsensi.size(); i++) {
-                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))) {
+                    if (getAbsensi.get(i).getDate().equals(Date.valueOf(LocalDate.now()))) {
                         cekTanggal = true;
                         idxAbsensi = i;
                     }
                 }
                 if (cekTanggal) {
-                    getAbsensi.get(idxAbsensi).setClockout(Timestamp.valueOf(LocalDateTime.now()));
-                    Timestamp temp = getAbsensi.get(idxAbsensi).getClockout();
+                    getAbsensi.get(idxAbsensi).setClockOut(Timestamp.valueOf(LocalDateTime.now()));
+                    Timestamp temp = getAbsensi.get(idxAbsensi).getClockOut();
                     logger.info(String.valueOf(temp));
                     absensiRepository.save(getAbsensi.get(idxAbsensi));
 
-                    return ResponseEntity.ok(new Response("Berhasil Clock Out, " + tempUsername));
+                    return ResponseEntity.ok(Response.builder()
+                            .message("Berhasil Clock Out, " + tempUsername)
+                            .build());
                 }
                 else {
-                    AbsensiModel absensi = new AbsensiModel();
-                    absensi.setEmployeeid(getEmployee.get(0).getId());
+                    Attendance absensi = new Attendance();
+                    absensi.setEmployeeId(getEmployee.get(0).getId());
                     absensi.setUsername(getEmployee.get(0).getUsername());
                     absensi.setPassword(getEmployee.get(0).getPassword());
-                    absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                    absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                    absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                    absensi.setDate(Date.valueOf(LocalDate.now()));
                     absensiRepository.save(absensi);
                 }
             }
             else {
                 logger.info("bikin baru");
-                AbsensiModel absensi = new AbsensiModel();
-                absensi.setEmployeeid(getEmployee.get(0).getId());
+                Attendance absensi = new Attendance();
+                absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
                 absensi.setPassword(getEmployee.get(0).getPassword());
-                absensi.setClockin(Timestamp.valueOf(LocalDateTime.now()));
-                absensi.setTodaydate(Date.valueOf(LocalDate.now()));
+                absensi.setClockIn(Timestamp.valueOf(LocalDateTime.now()));
+                absensi.setDate(Date.valueOf(LocalDate.now()));
                 absensiRepository.save(absensi);
             }
-            return ResponseEntity.ok(new Response("Berhasil Clock In, " + tempUsername));
+            return ResponseEntity.ok(Response.builder()
+                    .message("Berhasil Clock In, " + tempUsername)
+                    .build());
         }
         else {
             logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
             logger.info("admin tidak ditermukan");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Response.builder()
+                            .message("Passcode Salah")
+                            .build());
         }
     }
 
