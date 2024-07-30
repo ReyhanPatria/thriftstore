@@ -15,12 +15,15 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @RestController
@@ -39,18 +42,19 @@ public class LoginController {
     private EmployeeRepository employeeRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username,
-                                   @RequestParam String password,
-                                   @RequestParam String orderid) {
+            @RequestParam String password,
+            @RequestParam String orderid) {
         CustomerModel getCustData = customerRepository.findByUsername(username);
         TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
         if (getCustData != null && getCustData.getAccessRight().getId() == 4) {
             logger.info("data customer ada");
             CustomerModel getCustomer = customerRepository.findByUsername(username);
             boolean cekPhoneOrder = false;
-            if (temporaryOrderModel != null){
-                if (getCustomer.getPhonenumber().equals(temporaryOrderModel.getPhonenumber())){
+            if (temporaryOrderModel != null) {
+                if (getCustomer.getPhonenumber().equals(temporaryOrderModel.getPhonenumber())) {
                     cekPhoneOrder = true;
                 }
             }
@@ -61,7 +65,8 @@ public class LoginController {
                 response.put("customer", getCustomer);
                 response.put("cekPhoneOrder", cekPhoneOrder);
                 return ResponseEntity.ok(response);
-            } else {
+            }
+            else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("invalid username or password");
             }
         }
@@ -71,7 +76,8 @@ public class LoginController {
             if (isAuthenticated) {
                 log.info("yes");
                 return ResponseEntity.ok(getEmployee);
-            } else {
+            }
+            else {
                 log.info("no");
                 return ResponseEntity.badRequest().body("invalid username or password");
             }
@@ -80,12 +86,12 @@ public class LoginController {
 
     @PostMapping("/register")
     ResponseEntity<?> register(@RequestParam("username") String username,
-                               @RequestParam("password") String password,
-                               @RequestParam("name") String name,
-                               @RequestParam("email") String email,
-                               @RequestParam("usernameIG") String usernameIG,
-                               @RequestParam("phonenumber") String phonenumber,
-                               @RequestParam("birthdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthdate){
+            @RequestParam("password") String password,
+            @RequestParam("name") String name,
+            @RequestParam("email") String email,
+            @RequestParam("usernameIG") String usernameIG,
+            @RequestParam("phonenumber") String phonenumber,
+            @RequestParam("birthdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthdate) {
         CustomerModel existingUsername = customerRepository.findByUsername(username);
         if (existingUsername != null) {
             return ResponseEntity.badRequest().body(new Response("Username sudah digunakan"));
@@ -111,7 +117,7 @@ public class LoginController {
     }
 
     @GetMapping("/getNomorWa")
-    public ResponseEntity<?> getNomorWa(@RequestParam(name = "orderid") String orderid){
+    public ResponseEntity<?> getNomorWa(@RequestParam(name = "orderid") String orderid) {
         TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
         logger.info(orderid);
         return ResponseEntity.ok(temporaryOrderModel);

@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
-
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -26,7 +25,8 @@ public class MidtransService {
     private final CustomerRepository customerRepository;
 
     @Autowired
-    public MidtransService(MidtransCoreApi midtransCoreApi, TemporaryOrderRepository temporaryOrderRepository, CustomerRepository customerRepository) {
+    public MidtransService(MidtransCoreApi midtransCoreApi, TemporaryOrderRepository temporaryOrderRepository,
+            CustomerRepository customerRepository) {
         this.midtransCoreApi = midtransCoreApi;
         this.temporaryOrderRepository = temporaryOrderRepository;
         this.customerRepository = customerRepository;
@@ -37,7 +37,8 @@ public class MidtransService {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             java.util.Date parsedDate = dateFormat.parse(timestampStr);
             return new Timestamp(parsedDate.getTime());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Failed to convert string to timestamp", e);
         }
     }
@@ -60,7 +61,8 @@ public class MidtransService {
 
             // If transaction is settled
             if ("200".equals(statusCode) && "settlement".equals(transactionStatus)) {
-                List<TemporaryOrderModel> temporaryOrders = temporaryOrderRepository.findAllByMasterorderid(masterOrderId);
+                List<TemporaryOrderModel> temporaryOrders =
+                        temporaryOrderRepository.findAllByMasterorderid(masterOrderId);
                 for (TemporaryOrderModel temporaryOrderModel : temporaryOrders) {
                     // Update the status, payment date, and payment id
                     temporaryOrderModel.setStatus("On Packing");
@@ -73,13 +75,15 @@ public class MidtransService {
                             temporaryOrderModel.getStatus(),
                             temporaryOrderModel.getPaymentdate());
                 }
-            } else {
+            }
+            else {
                 log.warn("Failed to update order {}. Status code: {}, Transaction status: {}",
                         masterOrderId,
                         statusCode,
                         transactionStatus);
             }
-        } catch (MidtransError | RuntimeException e) {
+        }
+        catch (MidtransError | RuntimeException e) {
             log.error("Failed to check and update order status for orderId {}: {}", masterOrderId, e.getMessage());
         }
     }

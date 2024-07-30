@@ -1,8 +1,15 @@
 package com.LiqueStore.controller;
 
 import com.LiqueStore.Response;
-import com.LiqueStore.model.*;
-import com.LiqueStore.repository.*;
+import com.LiqueStore.model.AbsensiModel;
+import com.LiqueStore.model.EmployeeModel;
+import com.LiqueStore.model.ItemModel;
+import com.LiqueStore.model.OrdersModel;
+import com.LiqueStore.model.TypeModel;
+import com.LiqueStore.repository.AbsensiRepository;
+import com.LiqueStore.repository.ItemRepository;
+import com.LiqueStore.repository.OrdersRepository;
+import com.LiqueStore.repository.TypeRepository;
 import com.LiqueStore.service.FileStorageService;
 import com.LiqueStore.service.LoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,16 +19,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -67,20 +85,21 @@ public class SupervisorController {
                 tempId = employeeModel.getId();
             }
         }
-        if (cekPasscode){
+        if (cekPasscode) {
             List<EmployeeModel> getEmployee = loginService.getUsersByUsername(tempUsername);
             List<AbsensiModel> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
-            if (!getAbsensi.isEmpty()){
+            if (!getAbsensi.isEmpty()) {
                 for (int i = 0; i < getAbsensi.size(); i++) {
-                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))){
+                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))) {
                         cekTanggal = true;
                         idxAbsensi = i;
                     }
                 }
-                if (cekTanggal){
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(tempUsername + " Sudah Melakukan ClockIn"));
+                if (cekTanggal) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new Response(tempUsername + " Sudah Melakukan ClockIn"));
                 }
-                else{
+                else {
                     AbsensiModel absensi = new AbsensiModel();
                     absensi.setEmployeeid(getEmployee.get(0).getId());
                     absensi.setUsername(getEmployee.get(0).getUsername());
@@ -90,7 +109,7 @@ public class SupervisorController {
                     absensiRepository.save(absensi);
                 }
             }
-            else{
+            else {
                 logger.info("bikin baru");
                 AbsensiModel absensi = new AbsensiModel();
                 absensi.setEmployeeid(getEmployee.get(0).getId());
@@ -102,7 +121,7 @@ public class SupervisorController {
             }
             return ResponseEntity.ok(new Response("Berhasil Clock In, " + tempUsername));
         }
-        else{
+        else {
             logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
             logger.info("admin tidak ditermukan");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
@@ -127,17 +146,17 @@ public class SupervisorController {
                 tempId = employeeModel.getId();
             }
         }
-        if (cekPasscode){
+        if (cekPasscode) {
             List<EmployeeModel> getEmployee = loginService.getUsersByUsername(tempUsername);
             List<AbsensiModel> getAbsensi = absensiRepository.getAbsensiByEmployeeid(tempId);
-            if (!getAbsensi.isEmpty()){
+            if (!getAbsensi.isEmpty()) {
                 for (int i = 0; i < getAbsensi.size(); i++) {
-                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))){
+                    if (getAbsensi.get(i).getTodaydate().equals(Date.valueOf(LocalDate.now()))) {
                         cekTanggal = true;
                         idxAbsensi = i;
                     }
                 }
-                if (cekTanggal){
+                if (cekTanggal) {
                     getAbsensi.get(idxAbsensi).setClockout(Timestamp.valueOf(LocalDateTime.now()));
                     Timestamp temp = getAbsensi.get(idxAbsensi).getClockout();
                     logger.info(String.valueOf(temp));
@@ -145,7 +164,7 @@ public class SupervisorController {
 
                     return ResponseEntity.ok(new Response("Berhasil Clock Out, " + tempUsername));
                 }
-                else{
+                else {
                     AbsensiModel absensi = new AbsensiModel();
                     absensi.setEmployeeid(getEmployee.get(0).getId());
                     absensi.setUsername(getEmployee.get(0).getUsername());
@@ -155,7 +174,7 @@ public class SupervisorController {
                     absensiRepository.save(absensi);
                 }
             }
-            else{
+            else {
                 logger.info("bikin baru");
                 AbsensiModel absensi = new AbsensiModel();
                 absensi.setEmployeeid(getEmployee.get(0).getId());
@@ -167,7 +186,7 @@ public class SupervisorController {
             }
             return ResponseEntity.ok(new Response("Berhasil Clock In, " + tempUsername));
         }
-        else{
+        else {
             logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
             logger.info("admin tidak ditermukan");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
@@ -190,9 +209,11 @@ public class SupervisorController {
             empData.put("size", item.getSize());
             Timestamp lastUpdateDate = item.getLastupdate();
             if (lastUpdateDate != null) {
-                LocalDateTime lastUpdateDateTime = LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
+                LocalDateTime lastUpdateDateTime =
+                        LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
                 empData.put("lastupdate", lastUpdateDateTime.format(dateFormatter));
-            } else {
+            }
+            else {
                 empData.put("lastupdate", null);
             }
             empData.put("status", item.getStatus());
@@ -203,7 +224,7 @@ public class SupervisorController {
     }
 
     @GetMapping("/daftarTipe")
-    public ResponseEntity<?> daftarTipe(){
+    public ResponseEntity<?> daftarTipe() {
         List<TypeModel> getAllType = typeRepository.findAll();
         logger.info(String.valueOf(getAllType));
         return ResponseEntity.ok(getAllType);
@@ -211,13 +232,13 @@ public class SupervisorController {
 
     @PostMapping(value = "/tambahInventori", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> tambahInventori(@RequestParam("name") String name,
-                                             @RequestParam("typeId") int typeId,
-                                             @RequestParam("employeeId") int employeeId,
-                                             @RequestParam("customWeight") int customWeight,
-                                             @RequestParam("customCapitalPrice") int customCapitalPrice,
-                                             @RequestParam("customDefaultPrice") int customDefaultPrice,
-                                             @RequestParam("size") int size,
-                                             @RequestParam("files") List<MultipartFile> files) {
+            @RequestParam("typeId") int typeId,
+            @RequestParam("employeeId") int employeeId,
+            @RequestParam("customWeight") int customWeight,
+            @RequestParam("customCapitalPrice") int customCapitalPrice,
+            @RequestParam("customDefaultPrice") int customDefaultPrice,
+            @RequestParam("size") int size,
+            @RequestParam("files") List<MultipartFile> files) {
         Optional<TypeModel> optionalTypeModel = typeRepository.findById(typeId);
         String itemCode;
         if (optionalTypeModel.isPresent()) {
@@ -226,14 +247,16 @@ public class SupervisorController {
             // Dapatkan dua digit terakhir dari tahun dan bulan saat ini
             int year = currentDate.getYear();
             String yearString = String.valueOf(year).substring(2); // Mendapatkan dua digit terakhir dari tahun
-            String monthString = String.format("%02d", currentDate.getMonthValue()); // Mendapatkan bulan dengan dua digit
+            String monthString =
+                    String.format("%02d", currentDate.getMonthValue()); // Mendapatkan bulan dengan dua digit
             String prefix = getTypeData.getTypecode() + yearString + monthString;
             List<ItemModel> existingTypeCode = itemRepository.findByItemcodeStartingWith(prefix);
             String sequenceString = String.format("%05d", existingTypeCode.size() + 1);
             logger.info(sequenceString);
             itemCode = prefix + sequenceString;
             logger.info(itemCode);
-        } else {
+        }
+        else {
             return ResponseEntity.badRequest().body("Employee not found with ID: " + typeId);
         }
         List<String> fileNames = fileStorageService.storeFiles(files);
@@ -266,9 +289,11 @@ public class SupervisorController {
             empData.put("weight", item.getWeight());
             Timestamp lastUpdateDate = item.getLastupdate();
             if (lastUpdateDate != null) {
-                LocalDateTime lastUpdateDateTime = LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
+                LocalDateTime lastUpdateDateTime =
+                        LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
                 empData.put("lastupdate", lastUpdateDateTime.format(dateFormatter));
-            } else {
+            }
+            else {
                 empData.put("lastupdate", null);
             }
             return empData;
@@ -278,7 +303,7 @@ public class SupervisorController {
     }
 
     @PostMapping("/tambahTipe")
-    public ResponseEntity<?> tambahTipe(@RequestBody TypeModel typeModel){
+    public ResponseEntity<?> tambahTipe(@RequestBody TypeModel typeModel) {
         // Ambil huruf pertama dari nama
         char firstNameLetter = typeModel.getNama().toUpperCase().charAt(0);
         char firstVariantLetter = typeModel.getVarian().toUpperCase().charAt(0);
@@ -296,7 +321,7 @@ public class SupervisorController {
     }
 
     @PostMapping("/editTipe")
-    public ResponseEntity<?> editTipe(@RequestBody TypeModel typeModel){
+    public ResponseEntity<?> editTipe(@RequestBody TypeModel typeModel) {
         Optional<TypeModel> optionalTypeModel = typeRepository.findById(typeModel.getId());
         if (optionalTypeModel.isPresent()) {
             TypeModel changeType = optionalTypeModel.get();
@@ -312,7 +337,8 @@ public class SupervisorController {
             changeType.setTypecode(tipeKode);
             typeRepository.save(changeType);
             return ResponseEntity.ok(changeType);
-        } else {
+        }
+        else {
             return ResponseEntity.badRequest().body("Employee not found with ID: " + typeModel.getId());
         }
     }
@@ -324,13 +350,14 @@ public class SupervisorController {
         if (optType.isPresent()) {
             typeRepository.deleteById(id);
             return ResponseEntity.ok().body("Type deleted successfully.");
-        } else {
+        }
+        else {
             return ResponseEntity.badRequest().body("Type not found with ID: " + id);
         }
     }
 
     @GetMapping("/dataOrder")
-    public ResponseEntity<?> dataOrder(){
+    public ResponseEntity<?> dataOrder() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         List<OrdersModel> getAllOrders = ordersRepository.findAll();
         List<ItemModel> getAllItem = itemRepository.findAll();
@@ -369,7 +396,8 @@ public class SupervisorController {
             getSelectedOrder.setPackingdate(timestamp);
             ordersRepository.save(getSelectedOrder);
             return ResponseEntity.ok(getSelectedOrder);
-        } else {
+        }
+        else {
             return ResponseEntity.notFound().build();
         }
     }
@@ -385,7 +413,8 @@ public class SupervisorController {
             getSelectedOrder.setDeliverypickupdate(timestamp);
             ordersRepository.save(getSelectedOrder);
             return ResponseEntity.ok(getSelectedOrder);
-        } else {
+        }
+        else {
             return ResponseEntity.notFound().build();
         }
     }
@@ -408,19 +437,19 @@ public class SupervisorController {
                                 .findFirst()
                                 .orElse(null);
                         if (item == null) {
-                            return new String[]{"Unknown Item", "Unknown Type"};
+                            return new String[] {"Unknown Item", "Unknown Type"};
                         }
                         Optional<TypeModel> getSelectedType = typeRepository.findById(item.getTypeId().getId());
                         String typeName = "";
-                        if (getSelectedType.isPresent()){
+                        if (getSelectedType.isPresent()) {
                             TypeModel typeModel = getSelectedType.get();
                             typeName = typeModel.getNama();
                         }
                         String itemName = itemCodeToNameMap.getOrDefault(itemCode, "Unknown Item");
-                        return new String[]{itemName, typeName};
+                        return new String[] {itemName, typeName};
                     })
                     .findFirst()
-                    .orElse(new String[]{"Unknown Item", "Unknown Type"});
+                    .orElse(new String[] {"Unknown Item", "Unknown Type"});
             empData.put("namabarang", itemDetails[0]);
             empData.put("jenisbarang", itemDetails[1]);
             empData.put("namapembeli", orders.getUsername());
@@ -431,9 +460,11 @@ public class SupervisorController {
             Timestamp packingdate = orders.getCheckoutdate();
             LocalDateTime packingDateTime = LocalDateTime.ofInstant(packingdate.toInstant(), ZoneId.systemDefault());
             Timestamp deliverypickupdate = orders.getCheckoutdate();
-            LocalDateTime deliverypickupDateTime = LocalDateTime.ofInstant(deliverypickupdate.toInstant(), ZoneId.systemDefault());
+            LocalDateTime deliverypickupDateTime =
+                    LocalDateTime.ofInstant(deliverypickupdate.toInstant(), ZoneId.systemDefault());
             Timestamp deliverydonedate = orders.getCheckoutdate();
-            LocalDateTime deliverydoneDateTime = LocalDateTime.ofInstant(deliverydonedate.toInstant(), ZoneId.systemDefault());
+            LocalDateTime deliverydoneDateTime =
+                    LocalDateTime.ofInstant(deliverydonedate.toInstant(), ZoneId.systemDefault());
             empData.put("checkoutdate", checkoutDateTime.format(dateFormatter));
             empData.put("paymentdate", paymentDateTime.format(dateFormatter));
             empData.put("packingdate", packingDateTime.format(dateFormatter));

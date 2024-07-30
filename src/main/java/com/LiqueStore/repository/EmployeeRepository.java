@@ -7,7 +7,10 @@ import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<EmployeeModel, Integer> {
     EmployeeModel findByUsername(String username);
+
     EmployeeModel findByEmail(String email);
+
     List<EmployeeModel> findByAccessRight(AccessRightModel accessRight);
+
     List<EmployeeModel> getEmployeeByUsername(String username);
 }

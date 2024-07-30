@@ -2,17 +2,16 @@ package com.LiqueStore.service;
 
 import com.LiqueStore.controller.AdminController;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -31,7 +30,7 @@ public class RajaOngkirService {
 
     public String getProvinces() {
         String url = "https://pro.rajaongkir.com/api/province";
-//        String url = "https://api.rajaongkir.com/starter/province";
+        //        String url = "https://api.rajaongkir.com/starter/province";
         HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -42,7 +41,7 @@ public class RajaOngkirService {
 
     public String getCities(int provinceId) {
         String url = "https://pro.rajaongkir.com/api/city?province=" + provinceId;
-//        String url = "https://api.rajaongkir.com/starter/city?province=" + provinceId;
+        //        String url = "https://api.rajaongkir.com/starter/city?province=" + provinceId;
         org.springframework.http.HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -53,7 +52,7 @@ public class RajaOngkirService {
 
     public String getShippingCost(String originType, int origin, String destinationType, int destination, int weight) {
         String url = "https://pro.rajaongkir.com/api/cost";
-//        String url = "https://api.rajaongkir.com/starter/cost";
+        //        String url = "https://api.rajaongkir.com/starter/cost";
         HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -93,7 +92,8 @@ public class RajaOngkirService {
         try {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
             return response.getBody();
-        } catch (HttpClientErrorException e) {
+        }
+        catch (HttpClientErrorException e) {
             logger.info("Error: " + e.getMessage());
             return null;
         }

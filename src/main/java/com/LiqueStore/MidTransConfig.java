@@ -30,7 +30,7 @@ public class MidTransConfig {
     }
 
     @Bean
-    public MidtransCoreApi midtransCoreApi(){
+    public MidtransCoreApi midtransCoreApi() {
         Config config = Config.builder()
                 .setServerKey(serverKey)
                 .setClientKey(clientKey)
@@ -40,7 +40,7 @@ public class MidTransConfig {
     }
 
     @Bean
-    public MidtransIrisApi midtransIrisApi(){
+    public MidtransIrisApi midtransIrisApi() {
         Config config = Config.builder()
                 .setServerKey(serverKey)
                 .setClientKey(clientKey)
