@@ -1,8 +1,8 @@
 package com.liquestore.repository;
 
-import com.liquestore.model.OrdersModel;
+import com.liquestore.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrdersRepository extends JpaRepository<OrdersModel, String> {
-    OrdersModel findByPhonenumber(String phonenumber);
+public interface OrdersRepository extends JpaRepository<Order, String> {
+    Order findByPhonenumber(String phonenumber);
 }

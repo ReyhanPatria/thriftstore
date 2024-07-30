@@ -1,8 +1,8 @@
 package com.liquestore.service;
 
 import com.liquestore.model.AccessRight;
-import com.liquestore.model.CustomerModel;
-import com.liquestore.model.EmployeeModel;
+import com.liquestore.model.Customer;
+import com.liquestore.model.Employee;
 import com.liquestore.repository.AccessRightRepository;
 import com.liquestore.repository.CustomerRepository;
 import com.liquestore.repository.EmployeeRepository;
@@ -22,25 +22,25 @@ public class LoginService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<EmployeeModel> getUsersByUsername(String username) {
+    public List<Employee> getUsersByUsername(String username) {
         return employeeRepository.getEmployeeByUsername(username);
     }
 
-    public List<CustomerModel> getCustByUsername(String username) {
+    public List<Customer> getCustByUsername(String username) {
         return customerRepository.getCustomerByUsername(username);
     }
 
     public Boolean authenticateEmployee(String username, String password) {
-        EmployeeModel userDetails = employeeRepository.findByUsername(username);
+        Employee userDetails = employeeRepository.findByUsername(username);
         return userDetails != null && passwordEncoder.matches(password, userDetails.getPassword());
     }
 
     public Boolean authenticateCustomer(String username, String password) {
-        CustomerModel userDetails = customerRepository.findByUsername(username);
+        Customer userDetails = customerRepository.findByUsername(username);
         return userDetails != null && passwordEncoder.matches(password, userDetails.getPassword());
     }
 
-    public List<EmployeeModel> getEmployeesByAccessRightId(int accessrightid) {
+    public List<Employee> getEmployeesByAccessRightId(int accessrightid) {
         AccessRight accessRight = accessRightRepository.findById(accessrightid)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid access right ID: " + accessrightid));
         return employeeRepository.findByAccessRight(accessRight);

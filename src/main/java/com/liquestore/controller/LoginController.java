@@ -2,9 +2,9 @@ package com.liquestore.controller;
 
 import com.liquestore.dto.Response;
 import com.liquestore.model.AccessRight;
-import com.liquestore.model.CustomerModel;
-import com.liquestore.model.EmployeeModel;
-import com.liquestore.model.TemporaryOrderModel;
+import com.liquestore.model.Customer;
+import com.liquestore.model.Employee;
+import com.liquestore.model.TemporaryOrder;
 import com.liquestore.repository.CustomerRepository;
 import com.liquestore.repository.EmployeeRepository;
 import com.liquestore.repository.TemporaryOrderRepository;
@@ -47,14 +47,14 @@ public class LoginController {
     public ResponseEntity<?> login(@RequestParam String username,
             @RequestParam String password,
             @RequestParam String orderid) {
-        CustomerModel getCustData = customerRepository.findByUsername(username);
-        TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
-        if (getCustData != null && getCustData.getAccessRight().getId() == 4) {
+        Customer getCustData = customerRepository.findByUsername(username);
+        TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(orderid);
+        if (getCustData != null && getCustData.getAccessRightId().getId() == 4) {
             logger.info("data customer ada");
-            CustomerModel getCustomer = customerRepository.findByUsername(username);
+            Customer getCustomer = customerRepository.findByUsername(username);
             boolean cekPhoneOrder = false;
-            if (temporaryOrderModel != null) {
-                if (getCustomer.getPhonenumber().equals(temporaryOrderModel.getPhonenumber())) {
+            if (temporaryOrder != null) {
+                if (getCustomer.getPhoneNumber().equals(temporaryOrder.getPhoneNumber())) {
                     cekPhoneOrder = true;
                 }
             }
@@ -71,7 +71,7 @@ public class LoginController {
             }
         }
         else {
-            EmployeeModel getEmployee = employeeRepository.findByUsername(username);
+            Employee getEmployee = employeeRepository.findByUsername(username);
             boolean isAuthenticated = loginService.authenticateEmployee(username, password);
             if (isAuthenticated) {
                 log.info("yes");
@@ -92,32 +92,32 @@ public class LoginController {
             @RequestParam("usernameIG") String usernameIG,
             @RequestParam("phonenumber") String phonenumber,
             @RequestParam("birthdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthdate) {
-        CustomerModel existingUsername = customerRepository.findByUsername(username);
+        Customer existingUsername = customerRepository.findByUsername(username);
         if (existingUsername != null) {
             return ResponseEntity.badRequest()
                     .body(Response.builder()
                             .message("Username sudah digunakan")
                             .build());
         }
-        CustomerModel existingPhoneNumber = customerRepository.findByPhonenumber(phonenumber);
+        Customer existingPhoneNumber = customerRepository.findByPhonenumber(phonenumber);
         if (existingPhoneNumber != null) {
             return ResponseEntity.badRequest()
                     .body(Response.builder()
                             .message("Phone Number sudah digunakan")
                             .build());
         }
-        CustomerModel addCustomer = new CustomerModel();
+        Customer addCustomer = new Customer();
         addCustomer.setUsername(username);
         addCustomer.setPassword(passwordEncoder.encode(password));
         addCustomer.setName(name);
         addCustomer.setEmail(email);
-        addCustomer.setUsernameig(usernameIG);
-        addCustomer.setPhonenumber(phonenumber);
+        addCustomer.setUsernameIg(usernameIG);
+        addCustomer.setPhoneNumber(phonenumber);
         addCustomer.setBirthdate(birthdate);
         AccessRight accessRight = AccessRight.builder()
                 .id(4)
                 .build();
-        addCustomer.setAccessRight(accessRight);
+        addCustomer.setAccessRightId(accessRight);
         addCustomer.setStatus("active");
         customerRepository.save(addCustomer);
         logger.info(String.valueOf(addCustomer));
@@ -128,8 +128,8 @@ public class LoginController {
 
     @GetMapping("/getNomorWa")
     public ResponseEntity<?> getNomorWa(@RequestParam(name = "orderid") String orderid) {
-        TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
+        TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(orderid);
         logger.info(orderid);
-        return ResponseEntity.ok(temporaryOrderModel);
+        return ResponseEntity.ok(temporaryOrder);
     }
 }

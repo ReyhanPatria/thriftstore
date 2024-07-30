@@ -1,9 +1,9 @@
 package com.liquestore.controller;
 
-import com.liquestore.model.AddressModel;
-import com.liquestore.model.CustomerModel;
-import com.liquestore.model.DetailOrdersModel;
-import com.liquestore.model.TemporaryOrderModel;
+import com.liquestore.model.Address;
+import com.liquestore.model.Customer;
+import com.liquestore.model.OrderDetail;
+import com.liquestore.model.TemporaryOrder;
 import com.liquestore.repository.AddressRepository;
 import com.liquestore.repository.CustomerRepository;
 import com.liquestore.repository.DetailOrdersRepository;
@@ -71,20 +71,20 @@ public class CustomerController {
         params.put("transaction_details", transactionDetails);
         params.put("enabled_payments", new String[] {"bca_va", "shopeepay", "qris", "ovo"});
 
-        Optional<CustomerModel> optionalCustomerModel = customerRepository.findById(customerid);
+        Optional<Customer> optionalCustomerModel = customerRepository.findById(customerid);
         if (optionalCustomerModel.isPresent()) {
-            CustomerModel customerModel = optionalCustomerModel.get();
+            Customer customer = optionalCustomerModel.get();
             //        Customer details
             Map<String, Object> customerDetails = new HashMap<>();
-            customerDetails.put("first_name", customerModel.getUsername());
-            customerDetails.put("email", customerModel.getEmail());
-            customerDetails.put("phone", customerModel.getPhonenumber());
+            customerDetails.put("first_name", customer.getUsername());
+            customerDetails.put("email", customer.getEmail());
+            customerDetails.put("phone", customer.getPhoneNumber());
             params.put("customer_details", customerDetails);
 
             //        Shipping Address
             Map<String, Object> shippingAddress = new HashMap<>();
-            shippingAddress.put("first_name", customerModel.getUsername());
-            shippingAddress.put("phone", customerModel.getPhonenumber());
+            shippingAddress.put("first_name", customer.getUsername());
+            shippingAddress.put("phone", customer.getPhoneNumber());
             shippingAddress.put("address", address);
             shippingAddress.put("city", city);
             shippingAddress.put("postal_code", zipcode);
@@ -92,12 +92,12 @@ public class CustomerController {
             customerDetails.put("shipping_address", shippingAddress);
         }
 
-        DetailOrdersModel addDetailOrders = new DetailOrdersModel();
-        addDetailOrders.setOrderid(masterorderid);
-        addDetailOrders.setTotalweight(weight);
-        addDetailOrders.setDeliveryprice(deliveryprice);
-        addDetailOrders.setTotalprice(totalprice);
-        addDetailOrders.setPaymentdate(Timestamp.valueOf(LocalDateTime.now()));
+        OrderDetail addDetailOrders = new OrderDetail();
+        addDetailOrders.setOrderId(masterorderid);
+        addDetailOrders.setTotalWeight(weight);
+        addDetailOrders.setDeliveryPrice(deliveryprice);
+        addDetailOrders.setTotalPrice(totalprice);
+        addDetailOrders.setPaymentDate(Timestamp.valueOf(LocalDateTime.now()));
         log.info("ini data detail order {}", addDetailOrders);
         detailOrdersRepository.save(addDetailOrders);
 
@@ -111,7 +111,7 @@ public class CustomerController {
     @GetMapping("/getCustData")
     public ResponseEntity<?> getCustData(@RequestParam(name = "id") int id) {
         boolean cekId = false;
-        List<CustomerModel> getAllCust = customerRepository.findAll();
+        List<Customer> getAllCust = customerRepository.findAll();
         for (int i = 0; i < getAllCust.size(); i++) {
             if (getAllCust.get(i).getId() == id) {
                 cekId = true;
@@ -129,12 +129,12 @@ public class CustomerController {
 
     @GetMapping("/getOrderData")
     public ResponseEntity<?> getOrderData(@RequestParam(name = "id") String orderid) {
-        TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
-        String masterOrderId = temporaryOrderModel.getMasterorderid();
-        List<TemporaryOrderModel> listTemporaryOrder = temporaryOrderRepository.findAllByMasterorderid(masterOrderId);
+        TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(orderid);
+        String masterOrderId = temporaryOrder.getMasterOrderId();
+        List<TemporaryOrder> listTemporaryOrder = temporaryOrderRepository.findAllByMasterorderid(masterOrderId);
         // Hitung total harga dan total berat
-        int totalPrice = listTemporaryOrder.stream().mapToInt(TemporaryOrderModel::getTotalprice).sum();
-        int totalWeight = listTemporaryOrder.stream().mapToInt(TemporaryOrderModel::getTotalweight).sum();
+        int totalPrice = listTemporaryOrder.stream().mapToInt(TemporaryOrder::getTotalPrice).sum();
+        int totalWeight = listTemporaryOrder.stream().mapToInt(TemporaryOrder::getTotalWeight).sum();
 
         // Buat map untuk mengembalikan data
         Map<String, Object> result = new HashMap<>();
@@ -146,13 +146,13 @@ public class CustomerController {
 
     @GetMapping("/getAddressData")
     public ResponseEntity<?> getAddressData(@RequestParam(name = "id") int id) {
-        List<AddressModel> getAddress = addressRepository.findAll();
+        List<Address> getAddress = addressRepository.findAll();
         if (getAddress.isEmpty()) {
             return ResponseEntity.badRequest().body("tidak ada data");
         }
 
         // Memfilter alamat berdasarkan id pelanggan
-        List<AddressModel> filteredAddress = getAddress.stream()
+        List<Address> filteredAddress = getAddress.stream()
                 .filter(address -> address.getCustomer().getId() == id)
                 .collect(Collectors.toList());
 
@@ -179,29 +179,29 @@ public class CustomerController {
             @RequestParam("cityId") int cityid
     ) {
         if (id == null) {
-            AddressModel addressModel = new AddressModel();
-            addressModel.setAddressname(addressname);
-            addressModel.setAddressdetail(addressdetail);
-            addressModel.setCity(city);
-            addressModel.setState(state);
-            addressModel.setZipcode(zipcode);
-            addressModel.setNote(note);
-            addressModel.setCustomer(new CustomerModel(customerid));
-            addressModel.setCityid(cityid);
-            addressRepository.save(addressModel);
+            Address address = new Address();
+            address.setName(addressname);
+            address.setDetail(addressdetail);
+            address.setCity(city);
+            address.setState(state);
+            address.setZipcode(zipcode);
+            address.setNote(note);
+            address.setCustomer(new Customer(customerid));
+            address.setCityId(cityid);
+            addressRepository.save(address);
             return ResponseEntity.ok("Berhasil Menambah Address");
         }
         else {
-            Optional<AddressModel> optionalAddressModel = addressRepository.findById(id);
+            Optional<Address> optionalAddressModel = addressRepository.findById(id);
             if (optionalAddressModel.isPresent()) {
-                AddressModel getAddress = optionalAddressModel.get();
-                getAddress.setAddressname(addressname);
-                getAddress.setAddressdetail(addressdetail);
+                Address getAddress = optionalAddressModel.get();
+                getAddress.setName(addressname);
+                getAddress.setDetail(addressdetail);
                 getAddress.setCity(city);
                 getAddress.setState(state);
                 getAddress.setZipcode(zipcode);
                 getAddress.setNote(note);
-                getAddress.setCityid(cityid);
+                getAddress.setCityId(cityid);
                 addressRepository.save(getAddress);
                 return ResponseEntity.ok("Berhasil Mengubah Address");
             }

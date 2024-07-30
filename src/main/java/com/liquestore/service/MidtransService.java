@@ -1,7 +1,7 @@
 package com.liquestore.service;
 
-import com.liquestore.model.CustomerModel;
-import com.liquestore.model.TemporaryOrderModel;
+import com.liquestore.model.Customer;
+import com.liquestore.model.TemporaryOrder;
 import com.liquestore.repository.CustomerRepository;
 import com.liquestore.repository.TemporaryOrderRepository;
 import com.midtrans.httpclient.error.MidtransError;
@@ -54,26 +54,26 @@ public class MidtransService {
             String transactionTime = responseBody.getString("transaction_time");
             String orderId = responseBody.getString("order_id");
             log.info("order id dari midtrans{}", orderId);
-            TemporaryOrderModel tempOdModel = temporaryOrderRepository.findByOrderid(orderId);
-            CustomerModel custModel = customerRepository.findByPhonenumber(tempOdModel.getPhonenumber());
+            TemporaryOrder tempOdModel = temporaryOrderRepository.findByOrderid(orderId);
+            Customer custModel = customerRepository.findByPhonenumber(tempOdModel.getPhoneNumber());
             // Convert transactionTime to Timestamp
             Timestamp timestamp = convertStringToTimestamp(transactionTime);
 
             // If transaction is settled
             if ("200".equals(statusCode) && "settlement".equals(transactionStatus)) {
-                List<TemporaryOrderModel> temporaryOrders =
+                List<TemporaryOrder> temporaryOrders =
                         temporaryOrderRepository.findAllByMasterorderid(masterOrderId);
-                for (TemporaryOrderModel temporaryOrderModel : temporaryOrders) {
+                for (TemporaryOrder temporaryOrder : temporaryOrders) {
                     // Update the status, payment date, and payment id
-                    temporaryOrderModel.setStatus("On Packing");
-                    temporaryOrderModel.setPaymentdate(timestamp);
-                    temporaryOrderModel.setUsername(custModel.getUsername());
-                    temporaryOrderRepository.save(temporaryOrderModel);
+                    temporaryOrder.setStatus("On Packing");
+                    temporaryOrder.setPaymentDate(timestamp);
+                    temporaryOrder.setUsername(custModel.getUsername());
+                    temporaryOrderRepository.save(temporaryOrder);
                     // Log the updated order information
                     log.info("Order {} updated successfully. Status: {}, Payment Date: {}",
-                            temporaryOrderModel.getOrderid(),
-                            temporaryOrderModel.getStatus(),
-                            temporaryOrderModel.getPaymentdate());
+                            temporaryOrder.getOrderId(),
+                            temporaryOrder.getStatus(),
+                            temporaryOrder.getPaymentDate());
                 }
             }
             else {
