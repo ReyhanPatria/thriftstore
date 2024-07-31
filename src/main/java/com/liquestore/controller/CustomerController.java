@@ -11,8 +11,8 @@ import com.liquestore.repository.TemporaryOrderRepository;
 import com.liquestore.service.RajaOngkirService;
 import com.midtrans.httpclient.error.MidtransError;
 import com.midtrans.service.MidtransSnapApi;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,32 +27,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/backend/customer")
-@CrossOrigin
+@RequiredArgsConstructor
 public class CustomerController {
-    private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CustomerController.class);
+    private final RajaOngkirService rajaOngkirService;
+
+    private final CustomerRepository customerRepository;
+    private final TemporaryOrderRepository temporaryOrderRepository;
+    private final AddressRepository addressRepository;
+    private final DetailOrdersRepository detailOrdersRepository;
+
     private final MidtransSnapApi snapApi;
-
-    @Autowired
-    public CustomerController(MidtransSnapApi snapApi) {
-        this.snapApi = snapApi;
-    }
-
-    @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
-    private TemporaryOrderRepository temporaryOrderRepository;
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private DetailOrdersRepository detailOrdersRepository;
-    @Autowired
-    private RajaOngkirService rajaOngkirService;
 
     @PostMapping("/api/payment")
     public ResponseEntity<?> paymentGetaway(@RequestParam("masterorderid") String masterorderid,
@@ -104,7 +94,7 @@ public class CustomerController {
         String token = snapApi.createTransactionToken(params);
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
-        logger.info(String.valueOf(response));
+        log.info(String.valueOf(response));
         return ResponseEntity.ok(response);
     }
 
@@ -119,7 +109,7 @@ public class CustomerController {
             }
         }
         if (cekId) {
-            logger.info(String.valueOf(getAllCust));
+            log.info(String.valueOf(getAllCust));
             return ResponseEntity.ok(getAllCust);
         }
         else {
@@ -157,8 +147,8 @@ public class CustomerController {
                 .collect(Collectors.toList());
 
         if (!filteredAddress.isEmpty()) {
-            logger.info("address ditemukan");
-            logger.info(String.valueOf(filteredAddress));
+            log.info("address ditemukan");
+            log.info(String.valueOf(filteredAddress));
             return ResponseEntity.ok(filteredAddress);
         }
         else {

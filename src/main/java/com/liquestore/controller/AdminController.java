@@ -2,8 +2,8 @@ package com.liquestore.controller;
 
 import com.liquestore.model.Employee;
 import com.liquestore.model.Item;
-import com.liquestore.model.OrderColor;
 import com.liquestore.model.Order;
+import com.liquestore.model.OrderColor;
 import com.liquestore.model.TemporaryOrder;
 import com.liquestore.model.Type;
 import com.liquestore.repository.ItemRepository;
@@ -14,14 +14,14 @@ import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.MidtransService;
 import com.liquestore.service.RajaOngkirService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,36 +49,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/backend/admin")
-@CrossOrigin
+@RequiredArgsConstructor
 public class AdminController {
-    private static final Logger logger = Logger.getLogger(AdminController.class.getName());
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(AdminController.class);
-    @Autowired
-    private TypeRepository typeRepository;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private OrdersRepository ordersRepository;
-    @Autowired
-    private OrderColourRepository orderColourRepository;
-    @Autowired
-    private TemporaryOrderRepository temporaryOrderRepository;
-    @Autowired
-    private FileStorageService fileStorageService;
-    @Autowired
-    private MidtransService midtransService;
-    @Autowired
-    private RajaOngkirService rajaOngkirService;
+    private final TypeRepository typeRepository;
+    private final ItemRepository itemRepository;
+    private final OrdersRepository ordersRepository;
+    private final OrderColourRepository orderColourRepository;
+    private final TemporaryOrderRepository temporaryOrderRepository;
+    private final FileStorageService fileStorageService;
+    private final MidtransService midtransService;
+    private final RajaOngkirService rajaOngkirService;
 
     @GetMapping("/daftarTipe")
     public ResponseEntity<?> daftarTipe() {
         List<Type> getAllType = typeRepository.findAll();
-        logger.info(String.valueOf(getAllType));
+        log.info(String.valueOf(getAllType));
         return ResponseEntity.ok(getAllType);
     }
 
@@ -86,7 +77,7 @@ public class AdminController {
     public ResponseEntity<?> dataInventori() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<Item> getAllItem = itemRepository.findAll();
-        logger.info(String.valueOf(getAllItem));
+        log.info(String.valueOf(getAllItem));
         List<Map<String, Object>> itemData = getAllItem.stream().map(item -> {
             Map<String, Object> empData = new HashMap<>();
             empData.put("id", item.getId());
@@ -109,7 +100,7 @@ public class AdminController {
             empData.put("status", item.getStatus());
             return empData;
         }).collect(Collectors.toList());
-        logger.info(String.valueOf(itemData));
+        log.info(String.valueOf(itemData));
         return ResponseEntity.ok(itemData);
     }
 
@@ -134,9 +125,9 @@ public class AdminController {
             String prefix = getTypeData.getCode() + yearString + monthString;
             List<Item> existingTypeCode = itemRepository.findByItemcodeStartingWith(prefix);
             String sequenceString = String.format("%05d", existingTypeCode.size() + 1);
-            logger.info(sequenceString);
+            log.info(sequenceString);
             itemCode = prefix + sequenceString;
-            logger.info(itemCode);
+            log.info(itemCode);
         }
         else {
             return ResponseEntity.badRequest().body("Employee not found with ID: " + typeId);
@@ -157,7 +148,7 @@ public class AdminController {
         item.setStatus("available");
         item.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
         Item savedItem = itemRepository.save(item);
-        logger.info(String.valueOf(savedItem));
+        log.info(String.valueOf(savedItem));
         return ResponseEntity.ok(savedItem);
     }
 
@@ -206,7 +197,7 @@ public class AdminController {
     public ResponseEntity<?> dataTipe() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<Type> getAllTipe = typeRepository.findAll();
-        logger.info(String.valueOf(getAllTipe));
+        log.info(String.valueOf(getAllTipe));
         List<Map<String, Object>> itemData = getAllTipe.stream().map(item -> {
             Map<String, Object> empData = new HashMap<>();
             empData.put("id", item.getId());
@@ -218,7 +209,7 @@ public class AdminController {
             if (lastUpdateDate != null) {
                 LocalDateTime lastUpdateDateTime =
                         LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
-                logger.info(String.valueOf(lastUpdateDateTime.toLocalDate()));
+                log.info(String.valueOf(lastUpdateDateTime.toLocalDate()));
                 empData.put("lastupdate", lastUpdateDateTime.format(dateFormatter));
             }
             else {
@@ -226,7 +217,7 @@ public class AdminController {
             }
             return empData;
         }).collect(Collectors.toList());
-        logger.info(String.valueOf(itemData));
+        log.info(String.valueOf(itemData));
         return ResponseEntity.ok(itemData);
     }
 
@@ -245,7 +236,7 @@ public class AdminController {
         addType.setCode(tipeKode);
         addType.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
         typeRepository.save(addType);
-        logger.info(String.valueOf(addType));
+        log.info(String.valueOf(addType));
         return ResponseEntity.ok(addType);
     }
 
@@ -288,14 +279,14 @@ public class AdminController {
     @GetMapping("/getColour")
     public ResponseEntity<?> getColour() {
         List<OrderColor> getAllColour = orderColourRepository.findAll();
-        logger.info(String.valueOf(getAllColour));
+        log.info(String.valueOf(getAllColour));
         return ResponseEntity.ok(getAllColour);
     }
 
     @GetMapping("/getItem")
     public ResponseEntity<?> getItem() {
         List<Item> getAllItem = itemRepository.findAll();
-        logger.info(String.valueOf(getAllItem));
+        log.info(String.valueOf(getAllItem));
         return ResponseEntity.ok(getAllItem);
     }
 
@@ -320,7 +311,7 @@ public class AdminController {
             @RequestParam("typecode") String typecode) {
         String ctrId = String.format("%03d", orderid);
         List<TemporaryOrder> listTemporaryOrder = temporaryOrderRepository.findAll();
-        logger.info(listTemporaryOrder.toString());
+        log.info(listTemporaryOrder.toString());
         OrderColor orderColor = orderColourRepository.findByColourcode(colourcode);
         Type type = typeRepository.findByTypecode(typecode);
         String tempOrderid = "";
@@ -329,7 +320,7 @@ public class AdminController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
         String formattedDate = today.format(formatter);
         if (listTemporaryOrder.isEmpty()) {
-            logger.info("temporary order masih kosong");
+            log.info("temporary order masih kosong");
             TemporaryOrder addTemporaryOrder = new TemporaryOrder();
             tempOrderid = colourcode + ctrId + formattedDate;
             addTemporaryOrder.setOrderId(tempOrderid);
@@ -352,7 +343,7 @@ public class AdminController {
                     .anyMatch(order -> order.getColorId().getCode().equals(colourcode) &&
                             order.getOrderId().substring(4, 10).equals(formattedDate));
             if (cekTemporderData && cekNomor) {
-                logger.info("kodenya sama buk");
+                log.info("kodenya sama buk");
                 return ResponseEntity.badRequest().body("Kode pemesanan sudah digunakan");
             }
             Optional<TemporaryOrder> lowestOrderIdOrder = listTemporaryOrder.stream()
@@ -385,7 +376,7 @@ public class AdminController {
         TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(orderid);
         temporaryOrder.setLink("http://localhost:3000/login?orderid=" + temporaryOrder.getOrderId());
         String link = "http://localhost:3000/login?orderid=" + temporaryOrder.getOrderId();
-        logger.info(link);
+        log.info(link);
         temporaryOrderRepository.save(temporaryOrder);
         return ResponseEntity.ok(temporaryOrder);
     }
@@ -459,7 +450,7 @@ public class AdminController {
         }
         else {
             String ctrId = String.format("%03d", id + 1);
-            logger.info(ctrId);
+            log.info(ctrId);
             String hurufDepanWarna = "";
             // Ambil tanggal hari ini
             LocalDate today = LocalDate.now();
@@ -482,7 +473,7 @@ public class AdminController {
             addTemporaryOrder.setWaitingList(waitinglist);
             addTemporaryOrder.setItemIdList(itemidall);
             TemporaryOrder savedTemporaryOrder = temporaryOrderRepository.save(addTemporaryOrder);
-            logger.info(String.valueOf(savedTemporaryOrder));
+            log.info(String.valueOf(savedTemporaryOrder));
             return ResponseEntity.ok(savedTemporaryOrder);
         }
     }
@@ -568,18 +559,18 @@ public class AdminController {
 
     @PostMapping("/checkUpdateTransaction")
     public ResponseEntity<?> checkUpdateTransaction(@RequestBody List<TemporaryOrder> temporaryOrders) {
-        logger.info("masuk transaksinya");
+        log.info("masuk transaksinya");
         List<String> failedOrders = new ArrayList<>();
         for (TemporaryOrder order : temporaryOrders) {
             TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(order.getOrderId());
             if (temporaryOrder.getIsActive()) {
                 try {
-                    logger.info(order.getMasterOrderId());
+                    log.info(order.getMasterOrderId());
                     midtransService.checkAndUpdateOrderStatus(order.getMasterOrderId());
                 }
                 catch (Exception e) {
                     failedOrders.add(order.getOrderId());
-                    logger.info(e.getMessage());
+                    log.info(e.getMessage());
                 }
             }
         }
@@ -595,9 +586,9 @@ public class AdminController {
 
     @PostMapping("/deleteTemporaryOrder")
     public ResponseEntity<?> deleteTemporaryOrder(@RequestBody List<TemporaryOrder> orderData) {
-        logger.info(String.valueOf(orderData));
+        log.info(String.valueOf(orderData));
         if (orderData.isEmpty()) {
-            logger.info("Tidak ada data");
+            log.info("Tidak ada data");
             return ResponseEntity.badRequest().body("Order Data tidak ada");
         }
         else {
@@ -609,7 +600,7 @@ public class AdminController {
                 return ResponseEntity.ok("Berhasil clear temporary order");
             }
             catch (Exception e) {
-                logger.info("Gagal menghapus temporary order");
+                log.info("Gagal menghapus temporary order");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Gagal menghapus temporary order");
             }
         }
@@ -624,7 +615,7 @@ public class AdminController {
         addColour.setCode(varcharName);
         addColour.setHex(orderColor.getHex());
         orderColourRepository.save(addColour);
-        logger.info(String.valueOf(addColour));
+        log.info(String.valueOf(addColour));
         return ResponseEntity.ok(addColour);
     }
 
@@ -649,7 +640,7 @@ public class AdminController {
                     Timestamp checkoutdate = orders.getCheckoutDate();
                     LocalDateTime firstJoinDateTime =
                             LocalDateTime.ofInstant(checkoutdate.toInstant(), ZoneId.systemDefault());
-                    logger.info(String.valueOf(firstJoinDateTime));
+                    log.info(String.valueOf(firstJoinDateTime));
                     empData.put("checkoutdate", firstJoinDateTime.format(dateFormatter));
                     empData.put("packingdate", orders.getPackingDate());
                     empData.put("deliverypickupdate", orders.getDeliveryPickupDate());
@@ -661,7 +652,7 @@ public class AdminController {
     @PostMapping("/updatePackingdate")
     public ResponseEntity<?> updatePackingdate(@RequestParam(name = "rowId") String id) {
         Optional<Order> optionalOrdersModel = ordersRepository.findById(id);
-        logger.info(String.valueOf(optionalOrdersModel));
+        log.info(String.valueOf(optionalOrdersModel));
         if (optionalOrdersModel.isPresent()) {
             Order getSelectedOrder = optionalOrdersModel.get();
             LocalDateTime now = LocalDateTime.now();
@@ -679,7 +670,7 @@ public class AdminController {
     @PostMapping("/updateDeliverydate")
     public ResponseEntity<?> updateDeliverydate(@RequestParam(name = "rowId") String id) {
         Optional<Order> optionalOrdersModel = ordersRepository.findById(id);
-        logger.info(String.valueOf(optionalOrdersModel));
+        log.info(String.valueOf(optionalOrdersModel));
         if (optionalOrdersModel.isPresent()) {
             Order getSelectedOrder = optionalOrdersModel.get();
             LocalDateTime now = LocalDateTime.now();
@@ -771,15 +762,15 @@ public class AdminController {
 
     @GetMapping("/api/rajaongkir/waybill")
     public ResponseEntity<?> waybill() {
-        logger.info("tesdt");
+        log.info("tesdt");
         boolean cekStatus = false;
         List<Order> getAll = ordersRepository.findAll();
-        logger.info(String.valueOf(getAll));
+        log.info(String.valueOf(getAll));
         for (Order order : getAll) {
-            logger.info(String.valueOf(order));
+            log.info(String.valueOf(order));
             String noResi = order.getDeliveryReceiptNumber();
             if (noResi == null || noResi.isEmpty()) {
-                logger.info("No resi kosong untuk order: " + order.getId());
+                log.info("No resi kosong untuk order: " + order.getId());
                 continue;
             }
             String status = rajaOngkirService.getDeliveryStatus(noResi);
@@ -818,10 +809,10 @@ public class AdminController {
                 Cell cellPhoneNumber = row.getCell(21);
                 if (cellPhoneNumber != null) {
                     String getPhone = dataFormatter.formatCellValue(cellPhoneNumber);
-                    logger.info("Raw Phone Number: " + getPhone);
+                    log.info("Raw Phone Number: " + getPhone);
 
                     String phoneNumber = "0" + getPhone;
-                    logger.info("Formatted Phone Number: " + phoneNumber);
+                    log.info("Formatted Phone Number: " + phoneNumber);
                     Order order = ordersRepository.findByPhonenumber(phoneNumber);
                     if (order != null) {
                         if (order.getDeliveryPickupDate() != null) {

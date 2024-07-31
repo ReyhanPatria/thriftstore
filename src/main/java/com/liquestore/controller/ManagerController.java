@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liquestore.dto.Response;
-import com.liquestore.model.Attendance;
 import com.liquestore.model.AccessRight;
+import com.liquestore.model.Attendance;
 import com.liquestore.model.Employee;
 import com.liquestore.model.Item;
 import com.liquestore.model.Order;
@@ -18,7 +18,8 @@ import com.liquestore.repository.OrdersRepository;
 import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.LoginService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,38 +48,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/backend/manager")
-@CrossOrigin
+@RequiredArgsConstructor
 public class ManagerController {
-    private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
     boolean cekPasscode = false;
     String tempUsername;
     int tempId;
     boolean cekTanggal = false;
     int idxAbsensi = 0;
 
-    @Autowired
-    private LoginService loginService;
-    @Autowired
-    private EmployeeRepository employeeRepository;
-    @Autowired
-    private AbsensiRepository absensiRepository;
-    @Autowired
-    private AccessRightRepository accessRightRepository;
-    @Autowired
-    private OrdersRepository ordersRepository;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private TypeRepository typeRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private FileStorageService fileStorageService;
+    private final LoginService loginService;
+    private final EmployeeRepository employeeRepository;
+    private final AbsensiRepository absensiRepository;
+    private final AccessRightRepository accessRightRepository;
+    private final OrdersRepository ordersRepository;
+    private final ItemRepository itemRepository;
+    private final TypeRepository typeRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorageService;
 
     @PostMapping("/clockin")
     public ResponseEntity<?> clockin(@RequestBody String passcode) throws JsonProcessingException {
@@ -86,12 +78,12 @@ public class ManagerController {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
-        logger.info("inputan passcode " + extractedPasscode);
+        log.info("inputan passcode " + extractedPasscode);
         List<Employee> getPasscode = loginService.getEmployeesByAccessRightId(1);
         for (Employee employee : getPasscode) {
             String nomorwa = employee.getPhoneNumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
-            logger.info(lastFourDigits);
+            log.info(lastFourDigits);
             if (lastFourDigits.equals(extractedPasscode)) {
                 cekPasscode = true;
                 tempUsername = employee.getUsername();
@@ -125,7 +117,7 @@ public class ManagerController {
                 }
             }
             else {
-                logger.info("bikin baru");
+                log.info("bikin baru");
                 Attendance absensi = new Attendance();
                 absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
@@ -139,8 +131,8 @@ public class ManagerController {
                     .build());
         }
         else {
-            logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
-            logger.info("admin tidak ditermukan");
+            log.info(String.valueOf(Date.valueOf(LocalDate.now())));
+            log.info("admin tidak ditermukan");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Response.builder()
                     .message("Passcode Salah")
                     .build());
@@ -153,12 +145,12 @@ public class ManagerController {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
-        logger.info("inputan passcode " + extractedPasscode);
+        log.info("inputan passcode " + extractedPasscode);
         List<Employee> getPasscode = loginService.getEmployeesByAccessRightId(1);
         for (Employee employee : getPasscode) {
             String nomorwa = employee.getPhoneNumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
-            logger.info(lastFourDigits);
+            log.info(lastFourDigits);
             if (lastFourDigits.equals(extractedPasscode)) {
                 cekPasscode = true;
                 tempUsername = employee.getUsername();
@@ -178,7 +170,7 @@ public class ManagerController {
                 if (cekTanggal) {
                     getAbsensi.get(idxAbsensi).setClockOut(Timestamp.valueOf(LocalDateTime.now()));
                     Timestamp temp = getAbsensi.get(idxAbsensi).getClockOut();
-                    logger.info(String.valueOf(temp));
+                    log.info(String.valueOf(temp));
                     absensiRepository.save(getAbsensi.get(idxAbsensi));
 
                     return ResponseEntity.ok(Response.builder()
@@ -196,7 +188,7 @@ public class ManagerController {
                 }
             }
             else {
-                logger.info("bikin baru");
+                log.info("bikin baru");
                 Attendance absensi = new Attendance();
                 absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
@@ -210,8 +202,8 @@ public class ManagerController {
                     .build());
         }
         else {
-            logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
-            logger.info("admin tidak ditermukan");
+            log.info(String.valueOf(Date.valueOf(LocalDate.now())));
+            log.info("admin tidak ditermukan");
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(Response.builder()
@@ -287,7 +279,7 @@ public class ManagerController {
                     return empData;
                 }).collect(Collectors.toList());
 
-        logger.info(String.valueOf(employeeData));
+        log.info(String.valueOf(employeeData));
         return ResponseEntity.ok(employeeData);
     }
 
@@ -325,14 +317,14 @@ public class ManagerController {
         addEmployee.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
         addEmployee.setStatus("active");
         employeeRepository.save(addEmployee);
-        logger.info(String.valueOf(addEmployee));
+        log.info(String.valueOf(addEmployee));
         return ResponseEntity.ok(addEmployee);
     }
 
     @GetMapping("/getRolesKaryawan")
     public ResponseEntity<?> getRolesKaryawan() {
         List<AccessRight> getAllRoles = accessRightRepository.findAll();
-        logger.info(String.valueOf(getAllRoles));
+        log.info(String.valueOf(getAllRoles));
         return ResponseEntity.ok(getAllRoles);
     }
 
@@ -354,8 +346,8 @@ public class ManagerController {
                 .id(employeeModel.getAccessRightId().getId())
                 .build();
         Optional<Employee> optionalEmployee = employeeRepository.findById(employeeModel.getId());
-        logger.info(String.valueOf(employeeModel.getId()));
-        logger.info(String.valueOf(optionalEmployee));
+        log.info(String.valueOf(employeeModel.getId()));
+        log.info(String.valueOf(optionalEmployee));
         if (optionalEmployee.isPresent()) {
             Employee employee = optionalEmployee.get();
             employee.setUsername(employeeModel.getUsername());
@@ -401,7 +393,7 @@ public class ManagerController {
 
     @GetMapping("/pilihKaryawan")
     public ResponseEntity<?> pilihKaryawan(@RequestParam(name = "idAbsensi") String idAbsensi) {
-        logger.info(idAbsensi);
+        log.info(idAbsensi);
         SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm");
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         List<Attendance> pilihKaryawan = absensiRepository.getAbsensiByEmployeeid(Integer.parseInt(idAbsensi));
@@ -411,7 +403,7 @@ public class ManagerController {
                     .build());
         }
         else {
-            logger.info(String.valueOf(pilihKaryawan));
+            log.info(String.valueOf(pilihKaryawan));
             List<Map<String, Object>> employeeData = pilihKaryawan.stream().map(absensi -> {
                 Map<String, Object> empData = new HashMap<>();
                 empData.put("id", absensi.getId());
@@ -431,7 +423,7 @@ public class ManagerController {
                 }
                 Optional<Employee> optionalEmployeeModel = employeeRepository.findById(Integer.valueOf(idAbsensi));
                 if (optionalEmployeeModel.isPresent()) {
-                    logger.info("data masuk");
+                    log.info("data masuk");
                     Employee employee = optionalEmployeeModel.get();
                     Time jamMasuk = employee.getClockIn();
                     String formattedJamMasuk = jamMasuk.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
@@ -444,7 +436,7 @@ public class ManagerController {
                 }
                 return empData;
             }).collect(Collectors.toList());
-            logger.info(String.valueOf(employeeData));
+            log.info(String.valueOf(employeeData));
             return ResponseEntity.ok(employeeData);
         }
     }
@@ -453,7 +445,7 @@ public class ManagerController {
     public ResponseEntity<?> dataInventori() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         List<Item> getAllItem = itemRepository.findAll();
-        logger.info(String.valueOf(getAllItem));
+        log.info(String.valueOf(getAllItem));
         List<Map<String, Object>> itemData = getAllItem.stream().map(item -> {
             Map<String, Object> empData = new HashMap<>();
             empData.put("id", item.getId());
@@ -475,14 +467,14 @@ public class ManagerController {
             empData.put("status", item.getStatus());
             return empData;
         }).collect(Collectors.toList());
-        logger.info(String.valueOf(itemData));
+        log.info(String.valueOf(itemData));
         return ResponseEntity.ok(itemData);
     }
 
     @GetMapping("/daftarTipe")
     public ResponseEntity<?> daftarTipe() {
         List<Type> getAllType = typeRepository.findAll();
-        logger.info(String.valueOf(getAllType));
+        log.info(String.valueOf(getAllType));
         return ResponseEntity.ok(getAllType);
     }
 
@@ -508,9 +500,9 @@ public class ManagerController {
             String prefix = getTypeData.getCode() + yearString + monthString;
             List<Item> existingTypeCode = itemRepository.findByItemcodeStartingWith(prefix);
             String sequenceString = String.format("%05d", existingTypeCode.size() + 1);
-            logger.info(sequenceString);
+            log.info(sequenceString);
             itemCode = prefix + sequenceString;
-            logger.info(itemCode);
+            log.info(itemCode);
         }
         else {
             return ResponseEntity.badRequest().body("Employee not found with ID: " + typeId);
@@ -528,7 +520,7 @@ public class ManagerController {
         item.setFiles(fileNames);
         item.setStatus("available");
         Item savedItem = itemRepository.save(item);
-        logger.info(String.valueOf(savedItem));
+        log.info(String.valueOf(savedItem));
         return ResponseEntity.ok(savedItem);
     }
 
@@ -552,7 +544,7 @@ public class ManagerController {
             empData.put("namacust", orders.getUsername());
             Timestamp checkoutdate = orders.getCheckoutDate();
             LocalDateTime firstJoinDateTime = LocalDateTime.ofInstant(checkoutdate.toInstant(), ZoneId.systemDefault());
-            logger.info(String.valueOf(firstJoinDateTime));
+            log.info(String.valueOf(firstJoinDateTime));
             empData.put("checkoutdate", firstJoinDateTime.format(dateFormatter));
             empData.put("packingdate", orders.getPackingDate());
             empData.put("deliverydate", orders.getDeliveryPickupDate());
@@ -564,7 +556,7 @@ public class ManagerController {
     @PostMapping("/updatePackingdate")
     public ResponseEntity<?> updatePackingdate(@RequestParam(name = "rowId") String id) {
         Optional<Order> optionalOrdersModel = ordersRepository.findById(id);
-        logger.info(String.valueOf(optionalOrdersModel));
+        log.info(String.valueOf(optionalOrdersModel));
         if (optionalOrdersModel.isPresent()) {
             Order getSelectedOrder = optionalOrdersModel.get();
             LocalDateTime now = LocalDateTime.now();
@@ -581,7 +573,7 @@ public class ManagerController {
     @PostMapping("/updateDeliverydate")
     public ResponseEntity<?> updateDeliverydate(@RequestParam(name = "rowId") String id) {
         Optional<Order> optionalOrdersModel = ordersRepository.findById(id);
-        logger.info(String.valueOf(optionalOrdersModel));
+        log.info(String.valueOf(optionalOrdersModel));
         if (optionalOrdersModel.isPresent()) {
             Order getSelectedOrder = optionalOrdersModel.get();
             LocalDateTime now = LocalDateTime.now();

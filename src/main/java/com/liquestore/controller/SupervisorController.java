@@ -15,7 +15,8 @@ import com.liquestore.repository.OrdersRepository;
 import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.LoginService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,32 +41,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/backend/supervisor")
-@CrossOrigin
+@RequiredArgsConstructor
 public class SupervisorController {
-    private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
     boolean cekPasscode = false;
     String tempUsername;
     int tempId;
     boolean cekTanggal = false;
     int idxAbsensi = 0;
 
-    @Autowired
-    private TypeRepository typeRepository;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private FileStorageService fileStorageService;
-    @Autowired
-    private LoginService loginService;
-    @Autowired
-    private AbsensiRepository absensiRepository;
-    @Autowired
-    private OrdersRepository ordersRepository;
+    private final TypeRepository typeRepository;
+    private final ItemRepository itemRepository;
+    private final FileStorageService fileStorageService;
+    private final LoginService loginService;
+    private final AbsensiRepository absensiRepository;
+    private final OrdersRepository ordersRepository;
 
     @PostMapping("/clockin")
     public ResponseEntity<?> clockin(@RequestBody String passcode) throws JsonProcessingException {
@@ -73,12 +68,12 @@ public class SupervisorController {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
-        logger.info("inputan passcode " + extractedPasscode);
+        log.info("inputan passcode " + extractedPasscode);
         List<Employee> getPasscode = loginService.getEmployeesByAccessRightId(1);
         for (Employee employee : getPasscode) {
             String nomorwa = employee.getPhoneNumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
-            logger.info(lastFourDigits);
+            log.info(lastFourDigits);
             if (lastFourDigits.equals(extractedPasscode)) {
                 cekPasscode = true;
                 tempUsername = employee.getUsername();
@@ -113,7 +108,7 @@ public class SupervisorController {
                 }
             }
             else {
-                logger.info("bikin baru");
+                log.info("bikin baru");
                 Attendance absensi = new Attendance();
                 absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
@@ -127,8 +122,8 @@ public class SupervisorController {
                     .build());
         }
         else {
-            logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
-            logger.info("admin tidak ditermukan");
+            log.info(String.valueOf(Date.valueOf(LocalDate.now())));
+            log.info("admin tidak ditermukan");
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(Response.builder()
@@ -143,12 +138,12 @@ public class SupervisorController {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
-        logger.info("inputan passcode " + extractedPasscode);
+        log.info("inputan passcode " + extractedPasscode);
         List<Employee> getPasscode = loginService.getEmployeesByAccessRightId(1);
         for (Employee employee : getPasscode) {
             String nomorwa = employee.getPhoneNumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
-            logger.info(lastFourDigits);
+            log.info(lastFourDigits);
             if (lastFourDigits.equals(extractedPasscode)) {
                 cekPasscode = true;
                 tempUsername = employee.getUsername();
@@ -168,7 +163,7 @@ public class SupervisorController {
                 if (cekTanggal) {
                     getAbsensi.get(idxAbsensi).setClockOut(Timestamp.valueOf(LocalDateTime.now()));
                     Timestamp temp = getAbsensi.get(idxAbsensi).getClockOut();
-                    logger.info(String.valueOf(temp));
+                    log.info(String.valueOf(temp));
                     absensiRepository.save(getAbsensi.get(idxAbsensi));
 
                     return ResponseEntity.ok(Response.builder()
@@ -186,7 +181,7 @@ public class SupervisorController {
                 }
             }
             else {
-                logger.info("bikin baru");
+                log.info("bikin baru");
                 Attendance absensi = new Attendance();
                 absensi.setEmployeeId(getEmployee.get(0).getId());
                 absensi.setUsername(getEmployee.get(0).getUsername());
@@ -200,8 +195,8 @@ public class SupervisorController {
                     .build());
         }
         else {
-            logger.info(String.valueOf(Date.valueOf(LocalDate.now())));
-            logger.info("admin tidak ditermukan");
+            log.info(String.valueOf(Date.valueOf(LocalDate.now())));
+            log.info("admin tidak ditermukan");
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(Response.builder()
@@ -214,7 +209,7 @@ public class SupervisorController {
     public ResponseEntity<?> dataInventori() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         List<Item> getAllItem = itemRepository.findAll();
-        logger.info(String.valueOf(getAllItem));
+        log.info(String.valueOf(getAllItem));
         List<Map<String, Object>> itemData = getAllItem.stream().map(item -> {
             Map<String, Object> empData = new HashMap<>();
             empData.put("id", item.getId());
@@ -236,14 +231,14 @@ public class SupervisorController {
             empData.put("status", item.getStatus());
             return empData;
         }).collect(Collectors.toList());
-        logger.info(String.valueOf(itemData));
+        log.info(String.valueOf(itemData));
         return ResponseEntity.ok(itemData);
     }
 
     @GetMapping("/daftarTipe")
     public ResponseEntity<?> daftarTipe() {
         List<Type> getAllType = typeRepository.findAll();
-        logger.info(String.valueOf(getAllType));
+        log.info(String.valueOf(getAllType));
         return ResponseEntity.ok(getAllType);
     }
 
@@ -269,9 +264,9 @@ public class SupervisorController {
             String prefix = getTypeData.getCode() + yearString + monthString;
             List<Item> existingTypeCode = itemRepository.findByItemcodeStartingWith(prefix);
             String sequenceString = String.format("%05d", existingTypeCode.size() + 1);
-            logger.info(sequenceString);
+            log.info(sequenceString);
             itemCode = prefix + sequenceString;
-            logger.info(itemCode);
+            log.info(itemCode);
         }
         else {
             return ResponseEntity.badRequest().body("Employee not found with ID: " + typeId);
@@ -289,7 +284,7 @@ public class SupervisorController {
         item.setFiles(fileNames);
         item.setStatus("available");
         Item savedItem = itemRepository.save(item);
-        logger.info(String.valueOf(savedItem));
+        log.info(String.valueOf(savedItem));
         return ResponseEntity.ok(savedItem);
     }
 
@@ -297,7 +292,7 @@ public class SupervisorController {
     public ResponseEntity<?> dataTipe() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         List<Type> getAllTipe = typeRepository.findAll();
-        logger.info(String.valueOf(getAllTipe));
+        log.info(String.valueOf(getAllTipe));
         List<Map<String, Object>> itemData = getAllTipe.stream().map(item -> {
             Map<String, Object> empData = new HashMap<>();
             empData.put("id", item.getId());
@@ -315,7 +310,7 @@ public class SupervisorController {
             }
             return empData;
         }).collect(Collectors.toList());
-        logger.info(String.valueOf(itemData));
+        log.info(String.valueOf(itemData));
         return ResponseEntity.ok(itemData);
     }
 
@@ -333,7 +328,7 @@ public class SupervisorController {
         addType.setVariant(type.getVariant());
         addType.setCode(tipeKode);
         typeRepository.save(addType);
-        logger.info(String.valueOf(addType));
+        log.info(String.valueOf(addType));
         return ResponseEntity.ok(addType);
     }
 
@@ -393,7 +388,7 @@ public class SupervisorController {
             empData.put("namacust", orders.getUsername());
             Timestamp checkoutdate = orders.getCheckoutDate();
             LocalDateTime firstJoinDateTime = LocalDateTime.ofInstant(checkoutdate.toInstant(), ZoneId.systemDefault());
-            logger.info(String.valueOf(firstJoinDateTime));
+            log.info(String.valueOf(firstJoinDateTime));
             empData.put("checkoutdate", firstJoinDateTime.format(dateFormatter));
             empData.put("packingdate", orders.getPackingDate());
             empData.put("deliverydate", orders.getDeliveryPickupDate());
@@ -405,7 +400,7 @@ public class SupervisorController {
     @PostMapping("/updatePackingdate")
     public ResponseEntity<?> updatePackingdate(@RequestParam(name = "rowId") String id) {
         Optional<Order> optionalOrdersModel = ordersRepository.findById(id);
-        logger.info(String.valueOf(optionalOrdersModel));
+        log.info(String.valueOf(optionalOrdersModel));
         if (optionalOrdersModel.isPresent()) {
             Order getSelectedOrder = optionalOrdersModel.get();
             LocalDateTime now = LocalDateTime.now();
@@ -422,7 +417,7 @@ public class SupervisorController {
     @PostMapping("/updateDeliverydate")
     public ResponseEntity<?> updateDeliverydate(@RequestParam(name = "rowId") String id) {
         Optional<Order> optionalOrdersModel = ordersRepository.findById(id);
-        logger.info(String.valueOf(optionalOrdersModel));
+        log.info(String.valueOf(optionalOrdersModel));
         if (optionalOrdersModel.isPresent()) {
             Order getSelectedOrder = optionalOrdersModel.get();
             LocalDateTime now = LocalDateTime.now();

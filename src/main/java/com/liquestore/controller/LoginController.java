@@ -9,8 +9,8 @@ import com.liquestore.repository.CustomerRepository;
 import com.liquestore.repository.EmployeeRepository;
 import com.liquestore.repository.TemporaryOrderRepository;
 import com.liquestore.service.LoginService;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,24 +24,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/backend")
-@CrossOrigin
+@RequiredArgsConstructor
 public class LoginController {
-    private static final Logger logger = Logger.getLogger(LoginController.class.getName());
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(LoginController.class);
-    @Autowired
-    private LoginService loginService;
-    @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
-    private TemporaryOrderRepository temporaryOrderRepository;
-    @Autowired
-    private EmployeeRepository employeeRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final LoginService loginService;
+
+    private final CustomerRepository customerRepository;
+    private final TemporaryOrderRepository temporaryOrderRepository;
+    private final EmployeeRepository employeeRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username,
@@ -50,7 +46,7 @@ public class LoginController {
         Customer getCustData = customerRepository.findByUsername(username);
         TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(orderid);
         if (getCustData != null && getCustData.getAccessRightId().getId() == 4) {
-            logger.info("data customer ada");
+            log.info("data customer ada");
             Customer getCustomer = customerRepository.findByUsername(username);
             boolean cekPhoneOrder = false;
             if (temporaryOrder != null) {
@@ -60,7 +56,7 @@ public class LoginController {
             }
             boolean isAuthenticated = loginService.authenticateCustomer(username, password);
             if (isAuthenticated) {
-                logger.info("username ada");
+                log.info("username ada");
                 Map<String, Object> response = new HashMap<>();
                 response.put("customer", getCustomer);
                 response.put("cekPhoneOrder", cekPhoneOrder);
@@ -120,7 +116,7 @@ public class LoginController {
         addCustomer.setAccessRightId(accessRight);
         addCustomer.setStatus("active");
         customerRepository.save(addCustomer);
-        logger.info(String.valueOf(addCustomer));
+        log.info(String.valueOf(addCustomer));
         return ResponseEntity.ok(Response.builder()
                 .message("berhasil register")
                 .build());
@@ -129,7 +125,7 @@ public class LoginController {
     @GetMapping("/getNomorWa")
     public ResponseEntity<?> getNomorWa(@RequestParam(name = "orderid") String orderid) {
         TemporaryOrder temporaryOrder = temporaryOrderRepository.findByOrderid(orderid);
-        logger.info(orderid);
+        log.info(orderid);
         return ResponseEntity.ok(temporaryOrder);
     }
 }
