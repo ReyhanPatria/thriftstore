@@ -21,14 +21,8 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "typeid", referencedColumnName = "id")
-    private Type typeId;
-
-    @ManyToOne
-    @JoinColumn(name = "employeeid", referencedColumnName = "id")
-    private Employee employeeId;
-
+    private int typeId;
+    private int employeeId;
     private String code;
     private String name;
     private int size;

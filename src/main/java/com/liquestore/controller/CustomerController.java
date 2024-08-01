@@ -174,7 +174,7 @@ public class CustomerController {
             address.setDetail(addressdetail);
             address.setCity(city);
             address.setState(state);
-            address.setZipcode(zipcode);
+            address.setZipCode(zipcode);
             address.setNote(note);
             address.setCustomer(new Customer(customerid));
             address.setCityId(cityid);
@@ -189,7 +189,7 @@ public class CustomerController {
                 getAddress.setDetail(addressdetail);
                 getAddress.setCity(city);
                 getAddress.setState(state);
-                getAddress.setZipcode(zipcode);
+                getAddress.setZipCode(zipcode);
                 getAddress.setNote(note);
                 getAddress.setCityId(cityid);
                 addressRepository.save(getAddress);

@@ -11,13 +11,13 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "detailorders")
+@Table(name = "order_detail")
 public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String orderId;
+    private int orderId;
     private int totalWeight;
     private int deliveryPrice;
     private int totalPrice;

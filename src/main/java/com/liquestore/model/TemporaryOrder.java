@@ -16,19 +16,14 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "temporaryorder")
+@Table(name = "temporary_order")
 public class TemporaryOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "orderid", unique = true)
-    private String orderId;
-
-    @ManyToOne
-    @JoinColumn(name = "colorid", referencedColumnName = "id")
-    private OrderColor colorId;
-
+    private int orderId;
+    private int colorId;
     private String username;
     private String phoneNumber;
     private int totalPrice;
@@ -37,7 +32,7 @@ public class TemporaryOrder {
     private Timestamp paymentDate;
     private Timestamp checkoutDate;
     private String status;
-    private String masterOrderId;
+    private int masterOrderId;
     private Boolean isActive;
 
     @Convert(converter = StringListConverter.class)

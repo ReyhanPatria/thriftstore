@@ -21,10 +21,7 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "accessrightid", referencedColumnName = "id")
-    private AccessRight accessRightId;
-
+    private int accessRightId;
     private String name;
     private String username;
     private String password;

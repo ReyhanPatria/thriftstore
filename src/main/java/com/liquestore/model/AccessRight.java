@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "accessright")
+@Table(name = "access_right")
 public class AccessRight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

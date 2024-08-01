@@ -4,8 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -17,15 +15,11 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "customerid", referencedColumnName = "id")
-    private Customer customer;
-
+    private String customerId;
     private String name;
     private String detail;
-    private int cityId;
     private String city;
     private String state;
-    private int zipcode;
+    private String zipCode;
     private String note;
 }

@@ -255,11 +255,11 @@ public class ManagerController {
                     empData.put("username", employee.getUsername());
                     empData.put("fullname", employee.getFullName());
                     empData.put("email", employee.getEmail());
-                    LocalDate birthDate = employee.getBirthdate().toLocalDate();
+                    LocalDate birthDate = employee.getBirthDate().toLocalDate();
                     empData.put("tanggallahir", birthDate.format(dateFormatter));
                     empData.put("umur", Period.between(birthDate, LocalDate.now()).getYears());
                     empData.put("nomorwa", employee.getPhoneNumber());
-                    empData.put("jam_masuk", employee.getClockIn());
+                    empData.put("jam_masuk", employee.getScheduledClockIn());
                     empData.put("jadwal_libur", employee.getHolidaySchedule());
                     empData.put("status", employee.getStatus());
                     Timestamp firstJoinDate = employee.getCreatedDate();
@@ -306,12 +306,12 @@ public class ManagerController {
         Employee addEmployee = new Employee();
         addEmployee.setFullName(employee.getFullName());
         addEmployee.setAccessRightId(accessRight);
-        addEmployee.setBirthdate(employee.getBirthdate());
+        addEmployee.setBirthDate(employee.getBirthDate());
         addEmployee.setPhoneNumber(employee.getPhoneNumber());
         addEmployee.setEmail(employee.getEmail());
         addEmployee.setUsername(employee.getUsername());
         addEmployee.setCreatedDate(employee.getCreatedDate());
-        addEmployee.setClockIn(employee.getClockIn());
+        addEmployee.setScheduledClockIn(employee.getScheduledClockIn());
         addEmployee.setHolidaySchedule(employee.getHolidaySchedule());
         addEmployee.setPassword(passwordEncoder.encode("123"));
         addEmployee.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
@@ -352,13 +352,13 @@ public class ManagerController {
             Employee employee = optionalEmployee.get();
             employee.setUsername(employeeModel.getUsername());
             employee.setFullName(employeeModel.getFullName());
-            employee.setBirthdate(employeeModel.getBirthdate());
+            employee.setBirthDate(employeeModel.getBirthDate());
             employee.setPhoneNumber(employeeModel.getPhoneNumber());
             employee.setAccessRightId(accessRight);
             employee.setEmail(employeeModel.getEmail());
             employee.setCreatedDate(employeeModel.getCreatedDate());
             employee.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
-            employee.setClockIn(employeeModel.getClockIn());
+            employee.setScheduledClockIn(employeeModel.getScheduledClockIn());
             employee.setHolidaySchedule(employeeModel.getHolidaySchedule());
             employee.setStatus(employeeModel.getStatus());
             employeeRepository.save(employee);
@@ -425,7 +425,7 @@ public class ManagerController {
                 if (optionalEmployeeModel.isPresent()) {
                     log.info("data masuk");
                     Employee employee = optionalEmployeeModel.get();
-                    Time jamMasuk = employee.getClockIn();
+                    Time jamMasuk = employee.getScheduledClockIn();
                     String formattedJamMasuk = jamMasuk.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
                     empData.put("jam_masuk", formattedJamMasuk);
                     empData.put("jadwal_libur", employee.getHolidaySchedule());
